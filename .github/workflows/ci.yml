@@ -1,0 +1,36 @@
+name: CI - Build & Test
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'feature/*'
+      - 'bugfix/*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Oya checkam out
+    - uses: actions/checkout@v3
+    - name: Oya dotneterise
+    - uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+    - name: Oya restore quik quik
+      run: dotnet restore
+    - name: Oya build
+      run: dotnet build --no-restore
+      
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - name: Oya checkam out
+    - uses: actions/checkout@v3
+    - name: Oya dotneterise
+    - uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+    - name: Oya test
+      run: dotnet test --verbosity normal
