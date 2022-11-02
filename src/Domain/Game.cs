@@ -11,13 +11,16 @@ public class Game
     private readonly Random _random;
     private readonly List<Player> _players;
     private readonly Dictionary<Player, Player> _playersGuesses;
+    private bool _chosenTyperHasTyped;
     private Player? _chosenTyper;
+    private Outcome? _outcome;
 
     public Game()
     {
         _random = new Random();
         _players = new();
         _playersGuesses = new();
+        _chosenTyperHasTyped = false;
         State = State.WaitingForPlayers;
     }
 
@@ -37,7 +40,7 @@ public class Game
 
         lock (padlock)
         {
-            if (State != State.WaitingForPlayers)
+            if (State == State.Ready)
                 throw new Exception("Game already has enough players.");
 
             _players.Add(new Player(playerId, playerName));
@@ -46,28 +49,15 @@ public class Game
         }
     }
 
-    public void AddGuess(Player guessingPlayer, Player guessedPlayer)
-    {
-        EnsureGameNotEnded();
-
-        if (State != State.Started)
-            throw new Exception("Game has not started.");
-
-        if (!_players.Contains(guessingPlayer) || !_players.Contains(guessedPlayer))
-            throw new Exception("Invalid player(s).");
-
-        _playersGuesses.TryAdd(guessingPlayer, guessedPlayer); //only taking into account player's first guess.
-    }
-
     public Player Start()
     {
         EnsureGameNotEnded();
 
+        if (State == State.WaitingForPlayers)
+            throw new Exception("Game is not ready.");
+
         if (State == State.Started)
             throw new Exception("Game has already started.");
-
-        if (State != State.Ready)
-            throw new Exception("Game is not ready. There are not enough players yet.");
 
         lock (padlock)
         {
@@ -82,14 +72,59 @@ public class Game
         return _chosenTyper;
     }
 
+    public void Type(Player typer)
+    {
+        EnsureGameNotEnded();
+
+        if (State == State.WaitingForPlayers)
+            throw new Exception("Game is not ready.");
+
+        if (State == State.Ready)
+            throw new Exception("Game has not started.");
+
+        if (typer != _chosenTyper)
+            throw new Exception("The wrong player typed.");
+
+        if (_chosenTyperHasTyped)
+            throw new Exception("Chosen player has already typed.");
+
+        lock (padlock)
+        {
+            if (_chosenTyperHasTyped)
+                throw new Exception("Chosen player has already typed.");
+
+            _chosenTyperHasTyped = true;
+        }
+    }
+
+    public void AddGuess(Player guessingPlayer, Player guessedPlayer)
+    {
+        EnsureGameNotEnded();
+
+        if (State == State.WaitingForPlayers)
+            throw new Exception("Game is not ready.");
+
+        if (State == State.Ready)
+            throw new Exception("Game has not started.");
+
+        if (!_players.Contains(guessingPlayer) || !_players.Contains(guessedPlayer))
+            throw new Exception("Invalid player(s).");
+
+        _playersGuesses.TryAdd(guessingPlayer, guessedPlayer); //only taking into account player's first guess.
+    }
+
     public Outcome End()
     {
+        if (State == State.Ended)
+            return _outcome!;
+
         if (State != State.Started)
             throw new Exception("Game must started in order to end it.");
 
         lock (padlock)
         {
-            EnsureGameNotEnded();
+            if (State == State.Ended)
+                return _outcome!;
 
             var typer = _chosenTyper!;
 
@@ -103,7 +138,8 @@ public class Game
 
             State = State.Ended;
 
-            return new Outcome(winners);
+            _outcome = new Outcome(winners);
+            return _outcome;
         }
     }
 
