@@ -1,13 +1,14 @@
 using System.Threading.Tasks;
+using Application.Abstractions;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Application.Hubs;
 
-internal class GameHub : Hub
+internal class GameHub : Hub<IGameServer>, IGameClient
 {
-    private readonly IGameApplication _gameApp;
+    private readonly IGameApp _gameApp;
 
-    public GameHub(IGameApplication gameApp)
+    public GameHub(IGameApp gameApp)
     {
         _gameApp = gameApp;
     }
@@ -23,9 +24,10 @@ internal class GameHub : Hub
         await _gameApp.AddPlayerAsync(pid, playerName);
     }
 
-    public Task Type()
+    public async Task Type()
     {
-        throw new System.NotImplementedException();
+        var pid = Context.ConnectionId;
+        await _gameApp.PlayerTypingAsync(pid);
     }
 
     // /// <summary>

@@ -14,6 +14,7 @@ public class Game
     private bool _chosenTyperHasTyped;
     private Player? _chosenTyper;
     private Outcome? _outcome;
+    private State _state;
 
     public Game()
     {
@@ -21,31 +22,37 @@ public class Game
         _players = new();
         _playersGuesses = new();
         _chosenTyperHasTyped = false;
-        State = State.WaitingForPlayers;
+        _state = State.WaitingForPlayers;
     }
 
     public IReadOnlyCollection<Player> Players => _players.AsReadOnly();
 
-    public State State { get; private set; }
+    public bool IsWaitingForPlayers => _state == State.WaitingForPlayers;
+
+    public bool IsReady => _state == State.Ready;
+
+    public bool IsStarted => _state == State.Started;
+
+    public bool IsEnded => _state == State.Ended;
 
     public void AddPlayer(string playerId, string playerName)
     {
         EnsureGameNotEnded();
 
-        if (State == State.Started)
+        if (_state == State.Started)
             throw new Exception("Game has already started.");
 
-        if (State == State.Ready)
+        if (_state == State.Ready)
             throw new Exception("Game already has enough players.");
 
         lock (padlock)
         {
-            if (State == State.Ready)
+            if (_state == State.Ready)
                 throw new Exception("Game already has enough players.");
 
             _players.Add(new Player(playerId, playerName));
             if (_players.Count == MAX_PLAYERS_COUNT)
-                State = State.Ready;
+                _state = State.Ready;
         }
     }
 
@@ -53,20 +60,20 @@ public class Game
     {
         EnsureGameNotEnded();
 
-        if (State == State.WaitingForPlayers)
+        if (_state == State.WaitingForPlayers)
             throw new Exception("Game is not ready.");
 
-        if (State == State.Started)
+        if (_state == State.Started)
             throw new Exception("Game has already started.");
 
         lock (padlock)
         {
-            if (State == State.Started)
+            if (_state == State.Started)
                 throw new Exception("Game has already started.");
 
             var rndIdx = _random.Next(MAX_PLAYERS_COUNT + 1);
             _chosenTyper = _players[rndIdx];
-            State = State.Started;
+            _state = State.Started;
         }
 
         return _chosenTyper;
@@ -76,10 +83,10 @@ public class Game
     {
         EnsureGameNotEnded();
 
-        if (State == State.WaitingForPlayers)
+        if (_state == State.WaitingForPlayers)
             throw new Exception("Game is not ready.");
 
-        if (State == State.Ready)
+        if (_state == State.Ready)
             throw new Exception("Game has not started.");
 
         if (typer != _chosenTyper)
@@ -101,10 +108,10 @@ public class Game
     {
         EnsureGameNotEnded();
 
-        if (State == State.WaitingForPlayers)
+        if (_state == State.WaitingForPlayers)
             throw new Exception("Game is not ready.");
 
-        if (State == State.Ready)
+        if (_state == State.Ready)
             throw new Exception("Game has not started.");
 
         if (!_players.Contains(guessingPlayer) || !_players.Contains(guessedPlayer))
@@ -115,15 +122,15 @@ public class Game
 
     public Outcome End()
     {
-        if (State == State.Ended)
+        if (_state == State.Ended)
             return _outcome!;
 
-        if (State != State.Started)
+        if (_state != State.Started)
             throw new Exception("Game must started in order to end it.");
 
         lock (padlock)
         {
-            if (State == State.Ended)
+            if (_state == State.Ended)
                 return _outcome!;
 
             var typer = _chosenTyper!;
@@ -136,7 +143,7 @@ public class Game
             playersWhoGuessedCorrectly.ToArray() :
             new[] { typer };
 
-            State = State.Ended;
+            _state = State.Ended;
 
             _outcome = new Outcome(winners);
             return _outcome;
@@ -145,7 +152,7 @@ public class Game
 
     private void EnsureGameNotEnded()
     {
-        if (State == State.Ended)
+        if (_state == State.Ended)
             throw new Exception("Game has already ended.");
     }
 }
