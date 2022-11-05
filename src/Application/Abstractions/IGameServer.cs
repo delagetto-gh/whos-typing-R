@@ -1,12 +1,9 @@
 using System.Threading.Tasks;
+using Application.Events;
 
 namespace Application.Abstractions;
 
-internal interface IGameServer
+public interface IGameServer
 {
-    Task GameStarted();
-    Task JoinFailed(string reason);
-    Task Chosen();
-    Task SomeoneTyping();
-    Task Countdown(int count);
+    Task Event<TGameEvent>(TGameEvent @event) where TGameEvent : GameEvent;
 }

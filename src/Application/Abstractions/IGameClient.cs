@@ -2,11 +2,9 @@ using System.Threading.Tasks;
 
 namespace Application.Abstractions;
 
-internal interface IGameClient
+public interface IGameClient
 {
-    Task Guess(string guessedPlayer);
-    Task Join(string playerName);
-    Task Type();
+    Task Guess(string pId);
+    Task Join(string pId, string pNamee);
+    Task Type(string pId);
 }
-
-

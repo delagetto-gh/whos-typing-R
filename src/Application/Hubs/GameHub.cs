@@ -1,11 +1,14 @@
 using System.Threading.Tasks;
 using Application.Abstractions;
+using Application.Events;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Application.Hubs;
 
-internal class GameHub : Hub<IGameServer>, IGameClient
+public class GameHub : Hub<IGameServer>, IGameClient
 {
+    public static readonly string Route = "/whostyping";
+
     private readonly IGameApp _gameApp;
 
     public GameHub(IGameApp gameApp)
@@ -13,21 +16,25 @@ internal class GameHub : Hub<IGameServer>, IGameClient
         _gameApp = gameApp;
     }
 
+    public override async Task OnConnectedAsync()
+    {
+        var pid = Context.ConnectionId;
+        await Clients.Caller.Event(new PlayerConnected(pid));
+    }
+
     public Task Guess(string guessedPlayer)
     {
         throw new System.NotImplementedException();
     }
 
-    public async Task Join(string playerName)
+    public async Task Join(string pId, string playerName)
     {
-        var pid = Context.ConnectionId;
-        await _gameApp.AddPlayerAsync(pid, playerName);
+        await _gameApp.AddPlayerAsync(pId, playerName);
     }
 
-    public async Task Type()
+    public async Task Type(string pId)
     {
-        var pid = Context.ConnectionId;
-        await _gameApp.PlayerTypingAsync(pid);
+        await _gameApp.PlayerTypingAsync(pId);
     }
 
     // /// <summary>
