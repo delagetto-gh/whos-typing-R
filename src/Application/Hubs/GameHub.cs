@@ -20,12 +20,7 @@ public class GameHub : Hub<IGameServer>, IGameClient
     public override async Task OnConnectedAsync()
     {
         var pid = Context.ConnectionId;
-        await Clients.Caller.Event(new PlayerConnected(pid));
-    }
-
-    public Task Guess(string guessedPlayer)
-    {
-        throw new System.NotImplementedException();
+        await Clients.Caller.Event(new Connected(pid));
     }
 
     public async Task Join(string pId, string playerName)
@@ -37,6 +32,12 @@ public class GameHub : Hub<IGameServer>, IGameClient
     {
         await _gameApp.PlayerTypingAsync(pId);
     }
+
+    public Task Guess(string pId, string guessedPId)
+    {
+        throw new System.NotImplementedException();
+    }
+
 
     // /// <summary>
     // /// Allows a player to participate in a game session

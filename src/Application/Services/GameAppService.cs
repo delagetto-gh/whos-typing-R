@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Application.Events;
 using Domain;
+using Domain.Exceptions;
 
 namespace Application.Services;
 
@@ -28,13 +29,8 @@ internal class GameAppService : IGameAppService
             return;
         }
 
-        if (!_game.IsReady)
-            return;
-
         var chosenTyper = _game.Start();
-
         await _gameEventsService.PublishAsync(new GameStarted());
-
         await _gameEventsService.PublishAsync(new Chosen(), chosenTyper.Id);
     }
 
