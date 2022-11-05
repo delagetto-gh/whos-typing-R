@@ -1,8 +1,14 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddApp();
+builder.Services.AddInfra();
+
 var app = builder.Build();
 
-app.MapGet("/", () => "Hello World!");
+app.UseApp();
+app.UseFileServer();
 
 app.Run();
