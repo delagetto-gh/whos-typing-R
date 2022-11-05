@@ -1,6 +1,5 @@
-using Application;
-using Application.Abstractions;
 using Application.Hubs;
+using Application.Services;
 using Domain;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
@@ -16,7 +15,7 @@ public static class DependencyInjection
 
         services
         .AddSingleton<Game>()
-        .AddScoped<IGameApp, GameApp>();
+        .AddScoped<IGameAppService, GameAppService>();
 
 
         services.AddCors();

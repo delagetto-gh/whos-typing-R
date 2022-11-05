@@ -1,18 +1,16 @@
 using System;
 using System.Threading.Tasks;
-using Application.Abstractions;
 using Application.Events;
-using Application.Services;
 using Domain;
 
-namespace Application;
+namespace Application.Services;
 
-internal class GameApp : IGameApp
+internal class GameAppService : IGameAppService
 {
     private readonly Game _game;
     private readonly IGameEventsService _gameEventsService;
 
-    public GameApp(Game game, IGameEventsService gameEventsService)
+    public GameAppService(Game game, IGameEventsService gameEventsService)
     {
         _game = game;
         _gameEventsService = gameEventsService;

@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Application.Abstractions;
 using Application.Events;
+using Application.Services;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Application.Hubs;
@@ -9,9 +10,9 @@ public class GameHub : Hub<IGameServer>, IGameClient
 {
     public static readonly string Route = "/whostyping";
 
-    private readonly IGameApp _gameApp;
+    private readonly IGameAppService _gameApp;
 
-    public GameHub(IGameApp gameApp)
+    public GameHub(IGameAppService gameApp)
     {
         _gameApp = gameApp;
     }

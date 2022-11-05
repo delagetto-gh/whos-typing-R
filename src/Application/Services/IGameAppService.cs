@@ -1,9 +1,9 @@
 
 using System.Threading.Tasks;
 
-namespace Application.Abstractions;
+namespace Application.Services;
 
-public interface IGameApp
+public interface IGameAppService
 {
     Task AddPlayerAsync(string playerId, string playerName);
     Task PlayerTypingAsync(string pid);
