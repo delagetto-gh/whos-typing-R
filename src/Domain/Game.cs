@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Domain.Exceptions;
 
 namespace Domain;
 
@@ -27,28 +28,20 @@ public class Game
 
     public IReadOnlyCollection<Player> Players => _players.AsReadOnly();
 
-    public bool IsWaitingForPlayers => _state == State.WaitingForPlayers;
-
-    public bool IsReady => _state == State.Ready;
-
-    public bool IsStarted => _state == State.Started;
-
-    public bool IsEnded => _state == State.Ended;
-
     public void AddPlayer(string playerId, string playerName)
     {
         EnsureGameNotEnded();
 
         if (_state == State.Started)
-            throw new Exception("Game has already started.");
+            throw new GameAlreadyStartedException();
 
         if (_state == State.Ready)
-            throw new Exception("Game already has enough players.");
+            throw new GameFullException();
 
         lock (padlock)
         {
             if (_state == State.Ready)
-                throw new Exception("Game already has enough players.");
+                throw new GameFullException();
 
             _players.Add(new Player(playerId, playerName));
             if (_players.Count == MAX_PLAYERS_COUNT)
@@ -61,15 +54,15 @@ public class Game
         EnsureGameNotEnded();
 
         if (_state == State.WaitingForPlayers)
-            throw new Exception("Game is not ready.");
+            throw new GameNotStartedException();
 
         if (_state == State.Started)
-            throw new Exception("Game has already started.");
+            throw new GameAlreadyStartedException();
 
         lock (padlock)
         {
             if (_state == State.Started)
-                throw new Exception("Game has already started.");
+                throw new GameAlreadyStartedException();
 
             var rndIdx = _random.Next(MAX_PLAYERS_COUNT + 1);
             _chosenTyper = _players[rndIdx];
@@ -84,21 +77,21 @@ public class Game
         EnsureGameNotEnded();
 
         if (_state == State.WaitingForPlayers)
-            throw new Exception("Game is not ready.");
+            throw new GameNotStartedException();
 
         if (_state == State.Ready)
-            throw new Exception("Game has not started.");
+            throw new GameNotStartedException();
 
         if (typer != _chosenTyper)
-            throw new Exception("The wrong player typed.");
+            throw new UnchosenPlayerTypedException();
 
         if (_chosenTyperHasTyped)
-            throw new Exception("Chosen player has already typed.");
+            return;
 
         lock (padlock)
         {
             if (_chosenTyperHasTyped)
-                throw new Exception("Chosen player has already typed.");
+                return;
 
             _chosenTyperHasTyped = true;
         }
@@ -109,13 +102,10 @@ public class Game
         EnsureGameNotEnded();
 
         if (_state == State.WaitingForPlayers)
-            throw new Exception("Game is not ready.");
+            throw new GameNotStartedException();
 
         if (_state == State.Ready)
-            throw new Exception("Game has not started.");
-
-        if (!_players.Contains(guessingPlayer) || !_players.Contains(guessedPlayer))
-            throw new Exception("Invalid player(s).");
+            throw new GameNotStartedException();
 
         _playersGuesses.TryAdd(guessingPlayer, guessedPlayer); //only taking into account player's first guess.
     }
@@ -126,7 +116,7 @@ public class Game
             return _outcome!;
 
         if (_state != State.Started)
-            throw new Exception("Game must started in order to end it.");
+            throw new GameNotStartedException();
 
         lock (padlock)
         {
@@ -153,6 +143,6 @@ public class Game
     private void EnsureGameNotEnded()
     {
         if (_state == State.Ended)
-            throw new Exception("Game has already ended.");
+            throw new GameAlreadyEndedException();
     }
 }
