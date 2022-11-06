@@ -6,15 +6,48 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Who's Typing...</title>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
-    <input type="text" id="input-player-name">
-    <button type="submit" id="btn-join">Join</button>
+    <div class="title">
+        <p>Who's Typing</p>
+    </div>
+
+    <div>
+        <input type="text" id="input-player-name">
+        <button type="submit" id="btn-join-game">Join</button>
+    </div>
+
+    <div>
+        <div class="typing-or-guessing-section game-section">
+            <div id="waiting-placeholder">
+                <label>Waiting for players...</label>
+            </div>
+            <div id="youre-typing-section">
+                <label for="input-player-type">You're Typing!</label>
+                <input type="text" id="input-player-typing">
+            </div>
+            <div id="youre-guessing-section">
+                <label>You're Guessing!</label>
+                <button>Ryu</button>
+            </div>
+            <label class="countdown" id="countdown">10</label>
+        </div>
+        <div class="lobby-section game-section">
+            <table id="tbl-lobby">
+                <th>
+                    Lobby
+                </th>
+            </table>
+        </div>
+    </div>
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.10/signalr.js">
 </script>
-<script src="js/connection.js">
+<script src="js/hub.js">
 </script>
 <script src="js/app.js">
 </script>
+
 </html>

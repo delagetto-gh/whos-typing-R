@@ -1,0 +1,26 @@
+.title {
+    font-size: large;
+    font-weight: bold;
+}
+
+.game-section {
+    width: 45%;
+    float: left;
+    padding: 10px;
+    border: 2px solid red;
+}
+
+.countdown {
+    display: none;
+    font-size: large;
+    font-weight: bold;
+}
+
+#youre-guessing-section {
+    display: none;
+}
+
+#youre-typing-section {
+    display: none;
+
+}

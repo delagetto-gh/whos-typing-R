@@ -1,7 +1,6 @@
-Connection = () =>
-{
+createHub = (url) => {
     return new signalR.HubConnectionBuilder()
-        .withUrl("/whostyping")
+        .withUrl(url)
         .configureLogging(signalR.LogLevel.Information)
         .build();
-};
+}
