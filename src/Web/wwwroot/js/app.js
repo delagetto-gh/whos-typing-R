@@ -12,7 +12,6 @@ let pId;
 const startApp = async () => {
 
     playerNameInput.disabled = true;
-    playerTypingInput.disabled = true;
     joinGameButton.disabled = true;
 
     gameHub.on("Event", event => {
@@ -33,7 +32,7 @@ const startApp = async () => {
         if (event.name === "Chosen") {
             waitingPlaceholder.style.display = "none";
             youreGuessingSection.style.display = "none";
-            youreTypingection.style.direction = "block";
+            youreTypingection.style.display = "block";
         }
     });
 
@@ -43,9 +42,9 @@ const startApp = async () => {
         gameHub.send("Join", pId, name);
     });
 
-    playerTypingInput.addEventListener("keydown", () => {
-        gameHub.send("Type", pId);
-    });
+    // playerTypingInput.addEventListener("keydown", () => {
+    //     gameHub.send("Type", pId);
+    // });
 
     try {
         await gameHub.start();
