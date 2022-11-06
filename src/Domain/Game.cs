@@ -64,7 +64,7 @@ public class Game
             if (_state == State.Started)
                 throw new GameAlreadyStartedException();
 
-            var rndIdx = _random.Next(MAX_PLAYERS_COUNT + 1);
+            var rndIdx = _random.Next(MAX_PLAYERS_COUNT);
             _chosenTyper = _players[rndIdx];
             _state = State.Started;
         }
