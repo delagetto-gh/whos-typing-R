@@ -1,13 +1,18 @@
 const playerNameInput = document.getElementById("input-player-name");
 const joinGameButton = document.getElementById("btn-join-game");
+const typingInput = document.getElementById("input-player-typing");
+const someoneTypingAlert = document.getElementById("p-someone-typing-alert");
 
 const youreGuessingSection = document.getElementById("youre-guessing-section");
 const youreTypingection = document.getElementById("youre-typing-section");
 const waitingPlaceholder = document.getElementById("waiting-placeholder");
 
+
 const gameHub = createHub("/whostyping");
 
 let pId;
+let pName;
+let players;
 
 const startApp = async () => {
 
@@ -27,6 +32,16 @@ const startApp = async () => {
             waitingPlaceholder.style.display = "none";
             youreTypingection.style.direction = "none";
             youreGuessingSection.style.display = "block";
+            players = event.players;
+            players
+            .filter(o => o.id !== pId)
+            .forEach(o => {
+                let name = o.name;
+                var btn = document.createElement("button");
+                btn.innerText = name;
+                btn.dataset.pid = o.id;
+                youreGuessingSection.appendChild(btn);
+            });
         }
 
         if (event.name === "Chosen") {
@@ -34,17 +49,28 @@ const startApp = async () => {
             youreGuessingSection.style.display = "none";
             youreTypingection.style.display = "block";
         }
+
+        if (event.name === "SomeoneTyping") {
+            // display iitalic someone typing...
+            someoneTypingAlert.innerText = "Someone's typing..."
+        }
+
+        if (event.name === "Countdown") {
+            waitingPlaceholder.style.display = "none";
+            youreGuessingSection.style.display = "none";
+            youreTypingection.style.display = "block";
+        }
     });
 
     joinGameButton.addEventListener("click", () => {
-        var name = playerNameInput.value;
+        pName = playerNameInput.value;
         playerNameInput.disabled = true;
-        gameHub.send("Join", pId, name);
+        gameHub.send("Join", pId, pName);
     });
 
-    // playerTypingInput.addEventListener("keydown", () => {
-    //     gameHub.send("Type", pId);
-    // });
+    typingInput.addEventListener("keydown", () => {
+        gameHub.send("Type", pId);
+    });
 
     try {
         await gameHub.start();

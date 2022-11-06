@@ -1,5 +1,5 @@
+using Domain;
+
 namespace Application.Events;
 
-public record GameStarted : GameEvent { };
-
-
+public record GameStarted(Player[] Players) : GameEvent { }

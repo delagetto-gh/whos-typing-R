@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Application.Events;
 using Domain;
@@ -29,38 +31,53 @@ internal class GameAppService : IGameAppService
             return;
         }
 
-        var chosenTyper = _game.Start();
-        await _gameEventsService.PublishAsync(new GameStarted());
-        await _gameEventsService.PublishAsync(new Chosen(), chosenTyper.Id);
+        try
+        {
+            var chosenTyper = _game.Start();
+
+            var allPlayers = _game.Players.ToArray();
+
+            await _gameEventsService.PublishAsync(new GameStarted(allPlayers));
+            await _gameEventsService.PublishAsync(new Chosen(), chosenTyper.Id);
+        }
+        catch (Exception) { }
     }
 
-    public Task PlayerTypingAsync(string typingPlayerId)
+    public async Task PlayerTypingAsync(string typingPlayerId)
     {
-        throw new NotImplementedException();
-        // var player = _game.Players.Where(o => o.Id == typingPlayerId);
+        var player = _game.Players.SingleOrDefault(o => o.Id == typingPlayerId);
+        if (player == default)
+            return;
 
+        try
+        {
+            _game.Type(player);
+        }
+        catch (Exception)
+        {
+            return;
+        }
 
-        // var currentPlayerId = Context.ConnectionId;
-        // var chosenTyperId = _game..Id;
+        var pidsOfAllPlayersExceptTyper = _game.Players
+        .Except(new[] { player })
+        .Select(o => o.Id)
+        .ToArray();
 
-        // if (currentPlayerId != chosenTyperId)
-        //     return;
+        await _gameEventsService.PublishAsync(new SomeoneTyping(), pidsOfAllPlayersExceptTyper);
 
-        // await Clients.Others.SomeoneTyping();
-
-        // int secondsCountdown = 10;
-        // using (var stopWatc = new PeriodicTimer(TimeSpan.FromSeconds(1)))
-        // {
-        //     while (await stopWatc.WaitForNextTickAsync())
-        //     {
-        //         await _gameEventsService.NotifyCountdown(secondsCountdown);
-        //         secondsCountdown--;
-        //         if (secondsCountdown < 0)
-        //         {
-        //             break;
-        //         }
-        //     }
-        // }
+        int secondsCountdown = 10;
+        using (var stopWatc = new PeriodicTimer(TimeSpan.FromSeconds(1)))
+        {
+            while (await stopWatc.WaitForNextTickAsync())
+            {
+                await _gameEventsService.PublishAsync(new Countdown(secondsCountdown));
+                secondsCountdown--;
+                if (secondsCountdown < 0)
+                {
+                    break;
+                }
+            }
+        }
 
         // var winners = _game.Winners;
         // var whoWasTyping = _game.ChosenTyper;
